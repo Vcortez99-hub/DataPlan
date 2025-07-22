@@ -1,0 +1,1247 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Executivo - Investimentos em Soluções de IA</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@2.9.4/dist/Chart.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #0a0a0a;
+            color: #ffffff;
+            line-height: 1.6;
+        }
+
+        /* Navigation */
+        .nav-container {
+            background: rgba(26, 26, 26, 0.95);
+            backdrop-filter: blur(10px);
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            border-bottom: 2px solid #00ff88;
+        }
+
+        .nav-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            height: 40px;
+        }
+
+        .nav-buttons {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .nav-btn {
+            background: transparent;
+            border: 2px solid #00ff88;
+            color: #00ff88;
+            padding: 0.5rem 1.5rem;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 1rem;
+            font-weight: 500;
+        }
+
+        .nav-btn:hover, .nav-btn.active {
+            background: #00ff88;
+            color: #0a0a0a;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(0, 255, 136, 0.4);
+        }
+
+        /* Page Container */
+        .page {
+            display: none;
+            padding-top: 80px;
+            min-height: 100vh;
+            animation: fadeIn 0.5s ease-in-out;
+        }
+
+        .page.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        /* Page 1 - Overview */
+        .overview-header {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        .overview-header h1 {
+            font-size: 3rem;
+            background: linear-gradient(90deg, #00ff88, #00cc66);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 1rem;
+            font-weight: 900;
+        }
+
+        .filter-container {
+            background: rgba(26, 26, 26, 0.8);
+            padding: 1.5rem;
+            border-radius: 15px;
+            border: 2px solid #00ff88;
+            margin-bottom: 3rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .filter-container label {
+            font-weight: 600;
+            color: #00ff88;
+        }
+
+        .filter-select {
+            background: #1a1a1a;
+            border: 2px solid #00ff88;
+            color: #ffffff;
+            padding: 0.7rem 1.5rem;
+            border-radius: 10px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .filter-select:hover {
+            background: rgba(0, 255, 136, 0.1);
+        }
+
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-bottom: 3rem;
+        }
+
+        .metric-card {
+            background: linear-gradient(135deg, #1a1a1a, #2a2a2a);
+            padding: 2rem;
+            border-radius: 20px;
+            border: 2px solid rgba(0, 255, 136, 0.3);
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .metric-card:hover {
+            transform: translateY(-5px);
+            border-color: #00ff88;
+            box-shadow: 0 10px 30px rgba(0, 255, 136, 0.2);
+        }
+
+        .metric-value {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #00ff88;
+            margin: 1rem 0;
+        }
+
+        .metric-label {
+            font-size: 1.1rem;
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        .chart-container {
+            background: rgba(26, 26, 26, 0.5);
+            padding: 2rem;
+            border-radius: 20px;
+            margin-bottom: 2rem;
+            border: 1px solid rgba(0, 255, 136, 0.2);
+            position: relative;
+            height: 400px;
+        }
+
+        .chart-title {
+            font-size: 1.5rem;
+            margin-bottom: 1.5rem;
+            text-align: center;
+            color: #00ff88;
+        }
+
+        .charts-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        @media (max-width: 1200px) {
+            .charts-row {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Page 2 - Details */
+        .industry-cards {
+            display: grid;
+            gap: 2rem;
+        }
+
+        .industry-card {
+            background: linear-gradient(135deg, #1a1a1a, #262626);
+            border-radius: 20px;
+            padding: 2rem;
+            border: 2px solid rgba(0, 255, 136, 0.3);
+            transition: all 0.3s ease;
+        }
+
+        .industry-card:hover {
+            border-color: #00ff88;
+            box-shadow: 0 15px 40px rgba(0, 255, 136, 0.2);
+        }
+
+        .industry-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+
+        .industry-name {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #00ff88;
+        }
+
+        .solutions-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .solution-item {
+            background: rgba(0, 0, 0, 0.5);
+            padding: 1.5rem;
+            border-radius: 15px;
+            border: 1px solid rgba(0, 255, 136, 0.2);
+        }
+
+        .solution-name {
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: #00ff88;
+        }
+
+        .solution-metrics {
+            font-size: 0.9rem;
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        /* Page 3 - Rankings */
+        .ranking-container {
+            background: rgba(26, 26, 26, 0.5);
+            border-radius: 20px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .ranking-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .ranking-header h2 {
+            font-size: 2.5rem;
+            color: #00ff88;
+            margin-bottom: 1rem;
+        }
+
+        .ranking-list {
+            display: grid;
+            gap: 1rem;
+        }
+
+        .ranking-item {
+            background: linear-gradient(135deg, #1a1a1a, #2a2a2a);
+            padding: 1.5rem;
+            border-radius: 15px;
+            display: grid;
+            grid-template-columns: auto 1fr auto;
+            align-items: center;
+            gap: 2rem;
+            border: 2px solid transparent;
+            transition: all 0.3s ease;
+        }
+
+        .ranking-item:hover {
+            border-color: #00ff88;
+            transform: translateX(10px);
+        }
+
+        .ranking-position {
+            width: 60px;
+            height: 60px;
+            background: #00ff88;
+            color: #0a0a0a;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+
+        .ranking-item:nth-child(1) .ranking-position {
+            background: linear-gradient(135deg, #ffd700, #ffed4e);
+        }
+
+        .ranking-item:nth-child(2) .ranking-position {
+            background: linear-gradient(135deg, #c0c0c0, #e8e8e8);
+        }
+
+        .ranking-item:nth-child(3) .ranking-position {
+            background: linear-gradient(135deg, #cd7f32, #e8a654);
+        }
+
+        .ranking-details h3 {
+            font-size: 1.3rem;
+            margin-bottom: 0.5rem;
+            color: #ffffff;
+        }
+
+        .ranking-details p {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 0.95rem;
+        }
+
+        .roi-badge {
+            background: #00ff88;
+            color: #0a0a0a;
+            padding: 0.7rem 1.5rem;
+            border-radius: 30px;
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+
+        /* Page 4 - Charts */
+        .charts-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+            gap: 2rem;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .nav-content {
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            .overview-header h1 {
+                font-size: 2rem;
+            }
+
+            .metrics-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .charts-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .ranking-item {
+                grid-template-columns: auto 1fr;
+                gap: 1rem;
+            }
+
+            .roi-badge {
+                grid-column: 1 / -1;
+                text-align: center;
+                margin-top: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="nav-container">
+        <div class="nav-content">
+            <img src="https://lps-geral.s3.us-east-1.amazonaws.com/agente-ia-empresas/assets/logo-darede-white.png" alt="Darede" class="logo">
+            <div class="nav-buttons">
+                <button class="nav-btn active" onclick="showPage(event, 'overview')">Visão Geral</button>
+                <button class="nav-btn" onclick="showPage(event, 'details')">Detalhes por Indústria</button>
+                <button class="nav-btn" onclick="showPage(event, 'ranking')">Ranking ROI</button>
+                <button class="nav-btn" onclick="showPage(event, 'charts')">Gráficos</button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Page 1: Overview -->
+    <div id="overview" class="page active">
+        <div class="container">
+            <div class="overview-header">
+                <h1>Dashboard de Investimentos em IA</h1>
+                <p style="font-size: 1.2rem; color: rgba(255, 255, 255, 0.8);">Análise executiva de soluções por indústria</p>
+            </div>
+
+            <div class="filter-container">
+                <label for="industryFilter">Filtrar por Indústria:</label>
+                <select id="industryFilter" class="filter-select" onchange="filterByIndustry()">
+                    <option value="all">Todas as Indústrias</option>
+                    <option value="FSI">FSI - Serviços Financeiros</option>
+                    <option value="Agro">Agro - Agronegócio</option>
+                    <option value="Manufatura Auto">Manufatura Auto</option>
+                    <option value="Public Sector">Setor Público</option>
+                    <option value="Data Gen & IA">Data Gen & IA</option>
+                </select>
+            </div>
+
+            <div class="metrics-grid" id="metricsGrid">
+                <div class="metric-card">
+                    <div class="metric-label">Receita Total Esperada (3 anos)</div>
+                    <div class="metric-value" id="totalRevenue">R$ 0</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-label">Investimento Total Necessário</div>
+                    <div class="metric-value" id="totalInvestment">R$ 0</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-label">ROI Médio</div>
+                    <div class="metric-value" id="avgROI">0%</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-label">Número de Soluções</div>
+                    <div class="metric-value" id="totalSolutions">0</div>
+                </div>
+            </div>
+
+            <div class="charts-row">
+                <div class="chart-container">
+                    <h3 class="chart-title">Distribuição de Receita por Indústria</h3>
+                    <canvas id="revenueByIndustryChart"></canvas>
+                </div>
+
+                <div class="chart-container">
+                    <h3 class="chart-title">Evolução de Receita vs Investimento (3 Anos)</h3>
+                    <canvas id="evolutionChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Page 2: Details -->
+    <div id="details" class="page">
+        <div class="container">
+            <div class="overview-header">
+                <h1>Detalhes por Indústria</h1>
+                <p style="font-size: 1.2rem; color: rgba(255, 255, 255, 0.8);">Análise detalhada de receitas, despesas e investimentos</p>
+            </div>
+
+            <div class="industry-cards" id="industryCards">
+                <!-- Industry cards will be populated by JavaScript -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Page 3: Ranking -->
+    <div id="ranking" class="page">
+        <div class="container">
+            <div class="ranking-container">
+                <div class="ranking-header">
+                    <h2>Top 10 Soluções por ROI</h2>
+                    <p>Ranking das soluções com maior retorno sobre investimento em 3 anos</p>
+                </div>
+                <div class="ranking-list" id="rankingList">
+                    <!-- Ranking items will be populated by JavaScript -->
+                </div>
+            </div>
+
+            <div class="chart-container">
+                <h3 class="chart-title">Comparativo de ROI - Top 10 Soluções</h3>
+                <canvas id="roiComparisonChart" width="400" height="300"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- Page 4: Charts -->
+    <div id="charts" class="page">
+        <div class="container">
+            <div class="overview-header">
+                <h1>Análises Gráficas</h1>
+                <p style="font-size: 1.2rem; color: rgba(255, 255, 255, 0.8);">Visualizações detalhadas por solução e indústria</p>
+            </div>
+
+            <div class="charts-grid">
+                <div class="chart-container">
+                    <h3 class="chart-title">Receita por Solução - FSI</h3>
+                    <canvas id="fsiSolutionsChart" width="400" height="300"></canvas>
+                </div>
+
+                <div class="chart-container">
+                    <h3 class="chart-title">Receita por Solução - Agro</h3>
+                    <canvas id="agroSolutionsChart" width="400" height="300"></canvas>
+                </div>
+
+                <div class="chart-container">
+                    <h3 class="chart-title">Receita por Solução - Manufatura Auto</h3>
+                    <canvas id="autoSolutionsChart" width="400" height="300"></canvas>
+                </div>
+
+                <div class="chart-container">
+                    <h3 class="chart-title">Receita por Solução - Data Gen & IA</h3>
+                    <canvas id="dataSolutionsChart" width="400" height="300"></canvas>
+                </div>
+
+                <div class="chart-container" style="grid-column: 1 / -1;">
+                    <h3 class="chart-title">Matriz de Investimento vs Retorno</h3>
+                    <canvas id="investmentMatrixChart" width="800" height="400"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Data structure with real data from the Excel file
+        const dashboardData = {
+            industries: {
+                'FSI': {
+                    solutions: {
+                        'Landing Zone for FSI': {
+                            revenue: { y1: 771270, y2: 1542540, y3: 2313810 },
+                            investment: { y1: 360007, y2: 360007, y3: 360007 },
+                            expense: { y1: 252005, y2: 252005, y3: 252005 }
+                        },
+                        'Financial Lake': {
+                            revenue: { y1: 853300, y2: 1706600, y3: 2559900 },
+                            investment: { y1: 420000, y2: 420000, y3: 420000 },
+                            expense: { y1: 294000, y2: 294000, y3: 294000 }
+                        },
+                        'Observabilidade p/ OpenFinance': {
+                            revenue: { y1: 605650, y2: 1211300, y3: 1816950 },
+                            investment: { y1: 320000, y2: 320000, y3: 320000 },
+                            expense: { y1: 224000, y2: 224000, y3: 224000 }
+                        }
+                    }
+                },
+                'Agro': {
+                    solutions: {
+                        'MAP Agro': {
+                            revenue: { y1: 1000000, y2: 2200000, y3: 3500000 },
+                            investment: { y1: 480000, y2: 480000, y3: 480000 },
+                            expense: { y1: 336000, y2: 336000, y3: 336000 }
+                        },
+                        'IoT + AgroTrace': {
+                            revenue: { y1: 306000, y2: 673200, y3: 1040400 },
+                            investment: { y1: 180000, y2: 180000, y3: 180000 },
+                            expense: { y1: 126000, y2: 126000, y3: 126000 }
+                        },
+                        'SAP Rise on AWS': {
+                            revenue: { y1: 1368000, y2: 2736000, y3: 4104000 },
+                            investment: { y1: 640000, y2: 640000, y3: 640000 },
+                            expense: { y1: 448000, y2: 448000, y3: 448000 }
+                        },
+                        'Observabilidade + AgroInsight': {
+                            revenue: { y1: 1512000, y2: 3024000, y3: 4536000 },
+                            investment: { y1: 720000, y2: 720000, y3: 720000 },
+                            expense: { y1: 504000, y2: 504000, y3: 504000 }
+                        },
+                        'Chatbot - AgroBot': {
+                            revenue: { y1: 150000, y2: 330000, y3: 510000 },
+                            investment: { y1: 120000, y2: 120000, y3: 120000 },
+                            expense: { y1: 84000, y2: 84000, y3: 84000 }
+                        }
+                    }
+                },
+                'Manufatura Auto': {
+                    solutions: {
+                        'MAP Auto': {
+                            revenue: { y1: 1000000, y2: 2200000, y3: 3500000 },
+                            investment: { y1: 480000, y2: 480000, y3: 480000 },
+                            expense: { y1: 336000, y2: 336000, y3: 336000 }
+                        },
+                        'IoT + AutoTelemetry': {
+                            revenue: { y1: 396000, y2: 871200, y3: 1346400 },
+                            investment: { y1: 220000, y2: 220000, y3: 220000 },
+                            expense: { y1: 154000, y2: 154000, y3: 154000 }
+                        },
+                        'SAP Rise on AWS': {
+                            revenue: { y1: 1368000, y2: 2736000, y3: 4104000 },
+                            investment: { y1: 640000, y2: 640000, y3: 640000 },
+                            expense: { y1: 448000, y2: 448000, y3: 448000 }
+                        },
+                        'Observabilidade + AutoVision': {
+                            revenue: { y1: 1512000, y2: 3024000, y3: 4536000 },
+                            investment: { y1: 720000, y2: 720000, y3: 720000 },
+                            expense: { y1: 504000, y2: 504000, y3: 504000 }
+                        },
+                        'Chatbot - AutoAssist': {
+                            revenue: { y1: 150000, y2: 330000, y3: 510000 },
+                            investment: { y1: 120000, y2: 120000, y3: 120000 },
+                            expense: { y1: 84000, y2: 84000, y3: 84000 }
+                        }
+                    }
+                },
+                'Public Sector': {
+                    solutions: {
+                        'Chatbot - RAG Gov': {
+                            revenue: { y1: 0, y2: 500000, y3: 1100000 },
+                            investment: { y1: 180000, y2: 180000, y3: 180000 },
+                            expense: { y1: 126000, y2: 126000, y3: 126000 }
+                        },
+                        'MAP Gov': {
+                            revenue: { y1: 0, y2: 1000000, y3: 2200000 },
+                            investment: { y1: 420000, y2: 420000, y3: 420000 },
+                            expense: { y1: 294000, y2: 294000, y3: 294000 }
+                        },
+                        'VMWare Freedom': {
+                            revenue: { y1: 0, y2: 800000, y3: 1760000 },
+                            investment: { y1: 360000, y2: 360000, y3: 360000 },
+                            expense: { y1: 252000, y2: 252000, y3: 252000 }
+                        },
+                        'Webshield for GOV': {
+                            revenue: { y1: 0, y2: 600000, y3: 1320000 },
+                            investment: { y1: 280000, y2: 280000, y3: 280000 },
+                            expense: { y1: 196000, y2: 196000, y3: 196000 }
+                        }
+                    }
+                },
+                'Data Gen & IA': {
+                    solutions: {
+                        'Database Freedom': {
+                            revenue: { y1: 340000, y2: 680000, y3: 1360000 },
+                            investment: { y1: 280000, y2: 280000, y3: 280000 },
+                            expense: { y1: 196000, y2: 196000, y3: 196000 }
+                        },
+                        'MongoDB Atlas on AWS': {
+                            revenue: { y1: 280000, y2: 560000, y3: 1120000 },
+                            investment: { y1: 240000, y2: 240000, y3: 240000 },
+                            expense: { y1: 168000, y2: 168000, y3: 168000 }
+                        },
+                        'Mod. Atend. Cliente (Connect)': {
+                            revenue: { y1: 520000, y2: 1040000, y3: 1560000 },
+                            investment: { y1: 360000, y2: 360000, y3: 360000 },
+                            expense: { y1: 252000, y2: 252000, y3: 252000 }
+                        },
+                        'Q business': {
+                            revenue: { y1: 300000, y2: 660000, y3: 1050000 },
+                            investment: { y1: 200000, y2: 200000, y3: 200000 },
+                            expense: { y1: 140000, y2: 140000, y3: 140000 }
+                        },
+                        'Chatbot Corporativo RAG': {
+                            revenue: { y1: 892958, y2: 1964508, y3: 3127368 },
+                            investment: { y1: 480000, y2: 480000, y3: 480000 },
+                            expense: { y1: 336000, y2: 336000, y3: 336000 }
+                        },
+                        'Agentes Especializados': {
+                            revenue: { y1: 0, y2: 450000, y3: 990000 },
+                            investment: { y1: 320000, y2: 320000, y3: 320000 },
+                            expense: { y1: 224000, y2: 224000, y3: 224000 }
+                        },
+                        'Modelo de Crédito': {
+                            revenue: { y1: 0, y2: 600000, y3: 1320000 },
+                            investment: { y1: 420000, y2: 420000, y3: 420000 },
+                            expense: { y1: 294000, y2: 294000, y3: 294000 }
+                        }
+                    }
+                }
+            }
+        };
+
+        // Global variables for charts
+        let chartInstances = {};
+
+        // Format currency
+        function formatCurrency(value) {
+            return new Intl.NumberFormat('pt-BR', {
+                style: 'currency',
+                currency: 'BRL',
+                minimumFractionDigits: 0,
+                maximumFractionDigits: 0
+            }).format(value);
+        }
+
+        // Show page
+        function showPage(event, pageId) {
+            // Hide all pages
+            document.querySelectorAll('.page').forEach(page => {
+                page.classList.remove('active');
+            });
+            
+            // Remove active class from all nav buttons
+            document.querySelectorAll('.nav-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            
+            // Show selected page
+            document.getElementById(pageId).classList.add('active');
+            
+            // Add active class to clicked button
+            event.target.classList.add('active');
+            
+            // Initialize page-specific content
+            if (pageId === 'details') {
+                renderIndustryDetails();
+            } else if (pageId === 'ranking') {
+                renderRanking();
+            } else if (pageId === 'charts') {
+                renderAllCharts();
+            }
+        }
+
+        // Filter by industry
+        function filterByIndustry() {
+            const selectedIndustry = document.getElementById('industryFilter').value;
+            updateOverviewMetrics(selectedIndustry);
+            updateCharts(selectedIndustry);
+        }
+
+        // Update overview metrics
+        function updateOverviewMetrics(industryFilter = 'all') {
+            let filteredData = {};
+            
+            if (industryFilter === 'all') {
+                filteredData = dashboardData.industries;
+            } else {
+                if (dashboardData.industries[industryFilter]) {
+                    filteredData[industryFilter] = dashboardData.industries[industryFilter];
+                }
+            }
+            
+            let totalRevenue = 0;
+            let totalInvestment = 0;
+            let totalSolutions = 0;
+            let roiSum = 0;
+            let roiCount = 0;
+
+            Object.values(filteredData).forEach(industry => {
+                Object.values(industry.solutions).forEach(solution => {
+                    const rev3Years = solution.revenue.y1 + solution.revenue.y2 + solution.revenue.y3;
+                    const inv3Years = solution.investment.y1 + solution.investment.y2 + solution.investment.y3;
+                    
+                    totalRevenue += rev3Years;
+                    totalInvestment += inv3Years;
+                    totalSolutions++;
+                    
+                    if (inv3Years > 0) {
+                        const roi = ((rev3Years - inv3Years) / inv3Years) * 100;
+                        roiSum += roi;
+                        roiCount++;
+                    }
+                });
+            });
+
+            document.getElementById('totalRevenue').textContent = formatCurrency(totalRevenue);
+            document.getElementById('totalInvestment').textContent = formatCurrency(totalInvestment);
+            document.getElementById('avgROI').textContent = roiCount > 0 ? `${(roiSum / roiCount).toFixed(1)}%` : '0%';
+            document.getElementById('totalSolutions').textContent = totalSolutions;
+        }
+
+        // Render industry details
+        function renderIndustryDetails() {
+            const container = document.getElementById('industryCards');
+            container.innerHTML = '';
+
+            Object.entries(dashboardData.industries).forEach(([industryName, industryData]) => {
+                let totalRevenue = 0;
+                let totalInvestment = 0;
+                let totalExpense = 0;
+
+                Object.values(industryData.solutions).forEach(solution => {
+                    totalRevenue += solution.revenue.y1 + solution.revenue.y2 + solution.revenue.y3;
+                    totalInvestment += solution.investment.y1 + solution.investment.y2 + solution.investment.y3;
+                    totalExpense += solution.expense.y1 + solution.expense.y2 + solution.expense.y3;
+                });
+
+                const card = document.createElement('div');
+                card.className = 'industry-card';
+                card.innerHTML = `
+                    <div class="industry-header">
+                        <h2 class="industry-name">${industryName}</h2>
+                        <div>
+                            <p>ROI: <span style="color: #00ff88; font-weight: bold;">${totalInvestment > 0 ? ((totalRevenue - totalInvestment) / totalInvestment * 100).toFixed(1) : 0}%</span></p>
+                        </div>
+                    </div>
+                    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-bottom: 2rem;">
+                        <div style="text-align: center;">
+                            <p style="color: rgba(255, 255, 255, 0.7);">Receita Esperada (3 anos)</p>
+                            <p style="font-size: 1.5rem; font-weight: bold; color: #00ff88;">${formatCurrency(totalRevenue)}</p>
+                        </div>
+                        <div style="text-align: center;">
+                            <p style="color: rgba(255, 255, 255, 0.7);">Investimento Necessário</p>
+                            <p style="font-size: 1.5rem; font-weight: bold; color: #ff6b6b;">${formatCurrency(totalInvestment)}</p>
+                        </div>
+                        <div style="text-align: center;">
+                            <p style="color: rgba(255, 255, 255, 0.7);">Despesas Operacionais</p>
+                            <p style="font-size: 1.5rem; font-weight: bold; color: #ffa94d;">${formatCurrency(totalExpense)}</p>
+                        </div>
+                    </div>
+                    <h3 style="margin-bottom: 1rem; color: #00ff88;">Soluções</h3>
+                    <div class="solutions-grid">
+                        ${Object.entries(industryData.solutions).map(([solutionName, solutionData]) => {
+                            const rev3Years = solutionData.revenue.y1 + solutionData.revenue.y2 + solutionData.revenue.y3;
+                            const inv3Years = solutionData.investment.y1 + solutionData.investment.y2 + solutionData.investment.y3;
+                            const roi = inv3Years > 0 ? ((rev3Years - inv3Years) / inv3Years * 100) : 0;
+                            
+                            return `
+                                <div class="solution-item">
+                                    <div class="solution-name">${solutionName}</div>
+                                    <div class="solution-metrics">
+                                        <p>Receita: ${formatCurrency(rev3Years)}</p>
+                                        <p>Investimento: ${formatCurrency(inv3Years)}</p>
+                                        <p>ROI: <span style="color: #00ff88; font-weight: bold;">${roi.toFixed(1)}%</span></p>
+                                    </div>
+                                </div>
+                            `;
+                        }).join('')}
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        // Render ranking
+        function renderRanking() {
+            const rankingList = document.getElementById('rankingList');
+            rankingList.innerHTML = '';
+
+            // Calculate ROI for all solutions
+            const solutionsWithROI = [];
+            Object.entries(dashboardData.industries).forEach(([industryName, industryData]) => {
+                Object.entries(industryData.solutions).forEach(([solutionName, solutionData]) => {
+                    const rev3Years = solutionData.revenue.y1 + solutionData.revenue.y2 + solutionData.revenue.y3;
+                    const inv3Years = solutionData.investment.y1 + solutionData.investment.y2 + solutionData.investment.y3;
+                    const roi = inv3Years > 0 ? ((rev3Years - inv3Years) / inv3Years * 100) : 0;
+                    
+                    solutionsWithROI.push({
+                        name: solutionName,
+                        industry: industryName,
+                        revenue: rev3Years,
+                        investment: inv3Years,
+                        roi: roi
+                    });
+                });
+            });
+
+            // Sort by ROI
+            solutionsWithROI.sort((a, b) => b.roi - a.roi);
+
+            // Render top 10
+            solutionsWithROI.slice(0, 10).forEach((solution, index) => {
+                const item = document.createElement('div');
+                item.className = 'ranking-item';
+                item.innerHTML = `
+                    <div class="ranking-position">${index + 1}</div>
+                    <div class="ranking-details">
+                        <h3>${solution.name}</h3>
+                        <p>${solution.industry} | Receita: ${formatCurrency(solution.revenue)} | Investimento: ${formatCurrency(solution.investment)}</p>
+                    </div>
+                    <div class="roi-badge">ROI: ${solution.roi.toFixed(1)}%</div>
+                `;
+                rankingList.appendChild(item);
+            });
+
+            // Create ROI comparison chart
+            if (chartInstances.roiComparison) {
+                chartInstances.roiComparison.destroy();
+            }
+
+            const ctx = document.getElementById('roiComparisonChart').getContext('2d');
+            chartInstances.roiComparison = new Chart(ctx, {
+                type: 'horizontalBar',
+                data: {
+                    labels: solutionsWithROI.slice(0, 10).map(s => s.name),
+                    datasets: [{
+                        label: 'ROI (%)',
+                        data: solutionsWithROI.slice(0, 10).map(s => s.roi),
+                        backgroundColor: 'rgba(0, 255, 136, 0.6)',
+                        borderColor: '#00ff88',
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        xAxes: [{
+                            ticks: {
+                                fontColor: '#ffffff',
+                                callback: function(value) {
+                                    return value.toFixed(0) + '%';
+                                }
+                            },
+                            gridLines: {
+                                color: 'rgba(255, 255, 255, 0.1)'
+                            }
+                        }],
+                        yAxes: [{
+                            ticks: {
+                                fontColor: '#ffffff'
+                            },
+                            gridLines: {
+                                color: 'rgba(255, 255, 255, 0.1)'
+                            }
+                        }]
+                    },
+                    legend: {
+                        display: false
+                    }
+                }
+            });
+        }
+
+        // Initialize charts
+        function initCharts() {
+            // Revenue by Industry Chart
+            const industries = Object.keys(dashboardData.industries);
+            const revenues = industries.map(industry => {
+                let total = 0;
+                Object.values(dashboardData.industries[industry].solutions).forEach(solution => {
+                    total += solution.revenue.y1 + solution.revenue.y2 + solution.revenue.y3;
+                });
+                return total;
+            });
+
+            if (chartInstances.revenueByIndustry) {
+                chartInstances.revenueByIndustry.destroy();
+            }
+
+            const ctx1 = document.getElementById('revenueByIndustryChart').getContext('2d');
+            chartInstances.revenueByIndustry = new Chart(ctx1, {
+                type: 'doughnut',
+                data: {
+                    labels: industries,
+                    datasets: [{
+                        data: revenues,
+                        backgroundColor: [
+                            'rgba(0, 255, 136, 0.8)',    // Verde brilhante - FSI
+                            'rgba(255, 193, 7, 0.8)',     // Amarelo - Agro
+                            'rgba(33, 150, 243, 0.8)',    // Azul - Manufatura Auto
+                            'rgba(156, 39, 176, 0.8)',    // Roxo - Public Sector
+                            'rgba(255, 87, 34, 0.8)'      // Laranja - Data Gen & IA
+                        ],
+                        borderColor: '#ffffff',
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            fontColor: '#ffffff',
+                            padding: 15,
+                            fontSize: 12
+                        }
+                    },
+                    tooltips: {
+                        callbacks: {
+                            label: function(tooltipItem, data) {
+                                const value = data.datasets[0].data[tooltipItem.index];
+                                const label = data.labels[tooltipItem.index];
+                                const total = data.datasets[0].data.reduce((a, b) => a + b, 0);
+                                const percentage = ((value / total) * 100).toFixed(1);
+                                return label + ': ' + formatCurrency(value) + ' (' + percentage + '%)';
+                            }
+                        }
+                    }
+                }
+            });
+
+            // Evolution Chart
+            const years = ['Ano 1', 'Ano 2', 'Ano 3'];
+            let yearlyRevenue = [0, 0, 0];
+            let yearlyInvestment = [0, 0, 0];
+
+            Object.values(dashboardData.industries).forEach(industry => {
+                Object.values(industry.solutions).forEach(solution => {
+                    yearlyRevenue[0] += solution.revenue.y1;
+                    yearlyRevenue[1] += solution.revenue.y2;
+                    yearlyRevenue[2] += solution.revenue.y3;
+                    yearlyInvestment[0] += solution.investment.y1;
+                    yearlyInvestment[1] += solution.investment.y2;
+                    yearlyInvestment[2] += solution.investment.y3;
+                });
+            });
+
+            if (chartInstances.evolution) {
+                chartInstances.evolution.destroy();
+            }
+
+            const ctx2 = document.getElementById('evolutionChart').getContext('2d');
+            chartInstances.evolution = new Chart(ctx2, {
+                type: 'line',
+                data: {
+                    labels: years,
+                    datasets: [{
+                        label: 'Receita',
+                        data: yearlyRevenue,
+                        borderColor: '#00ff88',
+                        backgroundColor: 'rgba(0, 255, 136, 0.1)',
+                        borderWidth: 3,
+                        tension: 0.4
+                    }, {
+                        label: 'Investimento',
+                        data: yearlyInvestment,
+                        borderColor: '#ff6b6b',
+                        backgroundColor: 'rgba(255, 107, 107, 0.1)',
+                        borderWidth: 3,
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        yAxes: [{
+                            ticks: {
+                                fontColor: '#ffffff',
+                                fontSize: 11,
+                                callback: function(value) {
+                                    return 'R$ ' + (value / 1000000).toFixed(1) + 'M';
+                                }
+                            },
+                            gridLines: {
+                                color: 'rgba(255, 255, 255, 0.1)'
+                            }
+                        }],
+                        xAxes: [{
+                            ticks: {
+                                fontColor: '#ffffff',
+                                fontSize: 12
+                            },
+                            gridLines: {
+                                color: 'rgba(255, 255, 255, 0.1)'
+                            }
+                        }]
+                    },
+                    legend: {
+                        labels: {
+                            fontColor: '#ffffff',
+                            fontSize: 12
+                        }
+                    },
+                    tooltips: {
+                        callbacks: {
+                            label: function(tooltipItem, data) {
+                                const label = data.datasets[tooltipItem.datasetIndex].label;
+                                const value = data.datasets[tooltipItem.datasetIndex].data[tooltipItem.index];
+                                return label + ': ' + formatCurrency(value);
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Render all charts
+        function renderAllCharts() {
+            // FSI Solutions Chart
+            createSolutionChart('fsiSolutionsChart', 'FSI');
+            
+            // Agro Solutions Chart
+            createSolutionChart('agroSolutionsChart', 'Agro');
+            
+            // Auto Solutions Chart
+            createSolutionChart('autoSolutionsChart', 'Manufatura Auto');
+            
+            // Data Solutions Chart
+            createSolutionChart('dataSolutionsChart', 'Data Gen & IA');
+            
+            // Investment Matrix Chart
+            createInvestmentMatrixChart();
+        }
+
+        function createSolutionChart(canvasId, industryName) {
+            const canvas = document.getElementById(canvasId);
+            if (!canvas) return;
+            
+            const ctx = canvas.getContext('2d');
+            const industry = dashboardData.industries[industryName];
+            
+            if (!industry) return;
+            
+            const solutions = Object.keys(industry.solutions);
+            const revenues = solutions.map(sol => {
+                const s = industry.solutions[sol];
+                return s.revenue.y1 + s.revenue.y2 + s.revenue.y3;
+            });
+
+            if (chartInstances[canvasId]) {
+                chartInstances[canvasId].destroy();
+            }
+
+            chartInstances[canvasId] = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: solutions,
+                    datasets: [{
+                        label: 'Receita Total (3 anos)',
+                        data: revenues,
+                        backgroundColor: 'rgba(0, 255, 136, 0.6)',
+                        borderColor: '#00ff88',
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        yAxes: [{
+                            ticks: {
+                                fontColor: '#ffffff',
+                                callback: function(value) {
+                                    return formatCurrency(value);
+                                }
+                            },
+                            gridLines: {
+                                color: 'rgba(255, 255, 255, 0.1)'
+                            }
+                        }],
+                        xAxes: [{
+                            ticks: {
+                                fontColor: '#ffffff',
+                                autoSkip: false,
+                                maxRotation: 45,
+                                minRotation: 45
+                            },
+                            gridLines: {
+                                color: 'rgba(255, 255, 255, 0.1)'
+                            }
+                        }]
+                    },
+                    legend: {
+                        labels: {
+                            fontColor: '#ffffff'
+                        }
+                    }
+                }
+            });
+        }
+
+        function createInvestmentMatrixChart() {
+            const ctx = document.getElementById('investmentMatrixChart').getContext('2d');
+            
+            const scatterData = [];
+            Object.entries(dashboardData.industries).forEach(([industryName, industryData]) => {
+                Object.entries(industryData.solutions).forEach(([solutionName, solutionData]) => {
+                    const rev3Years = solutionData.revenue.y1 + solutionData.revenue.y2 + solutionData.revenue.y3;
+                    const inv3Years = solutionData.investment.y1 + solutionData.investment.y2 + solutionData.investment.y3;
+                    
+                    scatterData.push({
+                        x: inv3Years,
+                        y: rev3Years,
+                        label: `${solutionName} (${industryName})`
+                    });
+                });
+            });
+
+            if (chartInstances.investmentMatrix) {
+                chartInstances.investmentMatrix.destroy();
+            }
+
+            chartInstances.investmentMatrix = new Chart(ctx, {
+                type: 'scatter',
+                data: {
+                    datasets: [{
+                        label: 'Soluções',
+                        data: scatterData,
+                        backgroundColor: 'rgba(0, 255, 136, 0.6)',
+                        borderColor: '#00ff88',
+                        borderWidth: 2,
+                        pointRadius: 8,
+                        pointHoverRadius: 10
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        xAxes: [{
+                            type: 'linear',
+                            position: 'bottom',
+                            scaleLabel: {
+                                display: true,
+                                labelString: 'Investimento Total (R$)',
+                                fontColor: '#ffffff'
+                            },
+                            ticks: {
+                                fontColor: '#ffffff',
+                                callback: function(value) {
+                                    return formatCurrency(value);
+                                }
+                            },
+                            gridLines: {
+                                color: 'rgba(255, 255, 255, 0.1)'
+                            }
+                        }],
+                        yAxes: [{
+                            scaleLabel: {
+                                display: true,
+                                labelString: 'Receita Total (R$)',
+                                fontColor: '#ffffff'
+                            },
+                            ticks: {
+                                fontColor: '#ffffff',
+                                callback: function(value) {
+                                    return formatCurrency(value);
+                                }
+                            },
+                            gridLines: {
+                                color: 'rgba(255, 255, 255, 0.1)'
+                            }
+                        }]
+                    },
+                    legend: {
+                        display: false
+                    },
+                    tooltips: {
+                        callbacks: {
+                            label: function(tooltipItem, data) {
+                                const point = data.datasets[0].data[tooltipItem.index];
+                                return [
+                                    point.label,
+                                    'Investimento: ' + formatCurrency(point.x),
+                                    'Receita: ' + formatCurrency(point.y),
+                                    'ROI: ' + ((point.y - point.x) / point.x * 100).toFixed(1) + '%'
+                                ];
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function updateCharts(industryFilter) {
+            // Update the charts based on the filter
+            initCharts();
+        }
+
+        // Initialize on load
+        window.onload = function() {
+            updateOverviewMetrics();
+            initCharts();
+        };
+    </script>
+</body>
+</html>
